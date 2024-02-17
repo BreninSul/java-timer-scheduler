@@ -49,7 +49,7 @@ open class RunnableTimerTask(
     /**
      * The logger for this class.
      */
-    protected open val logger = Logger.getLogger(loggerClass.java.name)
+    protected open val logger = Logger.getLogger(loggerClass.java.name)!!
 
     /**
      * Runs the task and logs the duration and any potential exceptions.

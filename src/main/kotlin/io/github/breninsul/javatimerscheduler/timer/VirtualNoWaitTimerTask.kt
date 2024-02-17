@@ -24,7 +24,6 @@
 
 package io.github.breninsul.javatimerscheduler.timer
 
-import io.github.breninsul.javatimerscheduler.sync
 import java.util.concurrent.atomic.AtomicLong
 import java.util.logging.Level
 import kotlin.reflect.KClass
