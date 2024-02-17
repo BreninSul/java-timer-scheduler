@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.logging.Level
 import kotlin.reflect.KClass
 
-
 /**
  * Represents a virtual timer task.
  *

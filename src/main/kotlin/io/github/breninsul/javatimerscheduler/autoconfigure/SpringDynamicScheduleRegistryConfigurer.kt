@@ -22,15 +22,29 @@
  * SOFTWARE.
  */
 
-package io.github.breninsul.javatimerscheduler.registry
+package io.github.breninsul.javatimerscheduler.autoconfigure
+
+import org.springframework.scheduling.annotation.SchedulingConfigurer
+import org.springframework.scheduling.config.ScheduledTaskRegistrar
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 
 /**
-* Enum representing the different types of schedulers.
-* TIMER_PER_TASK: A timer scheduler that uses one timer per task.
-* SINGLETON_VIRTUAL_THREADS: A singleton scheduler that uses virtual threads.
-*/
-enum class SchedulerType {
-    THREAD_WAIT,
-    VIRTUAL_WAIT,
-    VIRTUAL_NO_WAIT,
+ * [SpringDynamicScheduleRegistryConfigurer] is a class that provides configuration for dynamic task scheduling in Spring framework.
+ *
+ * @property executor A [ScheduledExecutorService] that will be used to create dynamic tasks.
+ */
+open class SpringDynamicScheduleRegistryConfigurer(protected val executor: ScheduledExecutorService) : SchedulingConfigurer {
+    /**
+     * This method configures tasks for dynamic scheduling
+     *
+     * @param taskRegistrar A [ScheduledTaskRegistrar] that registers tasks for scheduling
+     */
+    override fun configureTasks(taskRegistrar: ScheduledTaskRegistrar) {
+        with(SpringDynamicScheduleRegistry) {
+            registrar = taskRegistrar
+        }
+        Executors.newScheduledThreadPool(0, Thread.ofVirtual().factory())
+        taskRegistrar.setScheduler(executor)
+    }
 }

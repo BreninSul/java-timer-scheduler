@@ -42,6 +42,7 @@ class TestRunJobTasks {
     fun testVirtualJobIsPerformedIfThrows() {
         testInternal(SchedulerType.VIRTUAL_NO_WAIT, tryException = true)
     }
+
     @Test
     fun testVirtuaWaitlJobIsPerformed() {
         testInternal(SchedulerType.VIRTUAL_WAIT, moreEqThen = 14, lessEqThen = 22)
@@ -66,17 +67,17 @@ class TestRunJobTasks {
         type: SchedulerType,
         jobDelay: Duration = Duration.ofMillis(10),
         runDelay: Duration = Duration.ofSeconds(10),
-        sleep:Duration = Duration.ofSeconds(1),
+        sleep: Duration = Duration.ofSeconds(1),
         moreEqThen: Int = 700,
         lessEqThen: Int = 1100,
         tryException: Boolean = false,
     ) {
         val counter = AtomicLong(0)
         TaskSchedulerRegistry.registerTypeTask(type, "test", jobDelay.multipliedBy(2)) {
-            if (tryException)runJobWithRandomExceptions(sleep,counter) else runJob(sleep,counter)
+            if (tryException)runJobWithRandomExceptions(sleep, counter) else runJob(sleep, counter)
         }
         TaskSchedulerRegistry.registerTypeTask(type, "test", jobDelay.multipliedBy(2)) {
-            if (tryException)runJobWithRandomExceptions(sleep,counter) else runJob(sleep,counter)
+            if (tryException)runJobWithRandomExceptions(sleep, counter) else runJob(sleep, counter)
         }
         Thread.sleep(runDelay)
         val counterValue = counter.get()
@@ -85,14 +86,20 @@ class TestRunJobTasks {
         println(counterValue)
     }
 
-    private fun runJobWithRandomExceptions(sleep:Duration,counter: AtomicLong) {
-        runJob(sleep,counter)
+    private fun runJobWithRandomExceptions(
+        sleep: Duration,
+        counter: AtomicLong,
+    ) {
+        runJob(sleep, counter)
         if (Random.nextInt(10) == 5) {
             throw RuntimeException("Test exception")
         }
     }
 
-    private fun runJob(sleep:Duration,counter: AtomicLong) {
+    private fun runJob(
+        sleep: Duration,
+        counter: AtomicLong,
+    ) {
         Thread.sleep(sleep)
         counter.incrementAndGet()
     }

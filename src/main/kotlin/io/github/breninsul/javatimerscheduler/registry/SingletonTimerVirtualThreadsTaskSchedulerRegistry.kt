@@ -46,7 +46,7 @@ import kotlin.reflect.KClass
  * @param waitTillEndOfProcessBeforeNewRun A Boolean value that indicates whether the scheduler should wait for the current task execution to finish before starting a new task execution
  *.
  */
-open class SingletonTimerVirtualThreadsTaskSchedulerRegistry(protected  val waitTillEndOfProcessBeforeNewRun:Boolean) : MapTaskSchedulerRegistry<TimerTask>() {
+open class SingletonTimerVirtualThreadsTaskSchedulerRegistry(protected val waitTillEndOfProcessBeforeNewRun: Boolean) : MapTaskSchedulerRegistry<TimerTask>() {
     /**
      * Common timer used for all tasks
      */
@@ -66,7 +66,7 @@ open class SingletonTimerVirtualThreadsTaskSchedulerRegistry(protected  val wait
     ): Long {
         return semaphore.sync {
             val id = Random.nextLong()
-            val task = if(waitTillEndOfProcessBeforeNewRun) VirtualWaitTimerTask(name, AtomicLong(1), loggerClass, loggingLevel, runnable) else VirtualNoWaitTimerTask(name, AtomicLong(1), loggerClass, loggingLevel, runnable)
+            val task = if (waitTillEndOfProcessBeforeNewRun) VirtualWaitTimerTask(name, AtomicLong(1), loggerClass, loggingLevel, runnable) else VirtualNoWaitTimerTask(name, AtomicLong(1), loggerClass, loggingLevel, runnable)
             commonTimer.scheduleAtFixedRate(task, firstDelay.toMillis(), fixedRateDelay.toMillis())
             tasksMap[id] = task
             return@sync id

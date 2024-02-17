@@ -22,37 +22,30 @@
  * SOFTWARE.
  */
 
-package io.github.breninsul.javatimerscheduler.timer
+package io.github.breninsul.javatimerscheduler
 
-import io.github.breninsul.javatimerscheduler.sync
-import java.util.concurrent.Semaphore
+import io.github.breninsul.javatimerscheduler.autoconfigure.SpringDynamicScheduleRegistry
+import io.github.breninsul.javatimerscheduler.autoconfigure.SpringDynamicSchedulerAutoconfiguration
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.context.annotation.Import
+import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.test.context.junit.jupiter.SpringExtension
+import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
-import java.util.logging.Level
-import kotlin.reflect.KClass
 
-/**
- * Class that represents a new virtual any run timer task.
- *
- * @param name The name of the task.
- * @param counter An AtomicLong used for incrementing a count.
- * @param loggerClass A class reference used for retrieving a logger.
- * @param loggingLevel The level at which the logger should log.
- * @param runnable The actual task to be run.
- */
-open class VirtualWaitTimerTask(
-    name: String,
-    counter: AtomicLong = AtomicLong(0),
-    loggerClass: KClass<*> = VirtualWaitTimerTask::class,
-    loggingLevel: Level = Level.FINEST,
-    runnable: Runnable,
-) : VirtualTimerTask(name, counter, loggerClass, loggingLevel, runnable) {
-    protected open val taskSemaphore = Semaphore(1)
-
-    override fun runInternal(currentThread: Thread) {
-        taskSemaphore.sync {
-            addThread(currentThread)
-            runnable.run()
-            removeThread(currentThread)
-        }
+@ExtendWith(SpringExtension::class)
+@EnableScheduling
+@Import(SpringDynamicSchedulerAutoconfiguration::class)
+class TestSpring {
+    @Test
+    fun testTask() {
+        val atomicLong = AtomicLong(0)
+        SpringDynamicScheduleRegistry.registerCron("*/1 * * * * *") { atomicLong.incrementAndGet() }
+        Thread.sleep(Duration.ofSeconds(10))
+        val counter = atomicLong.get()
+        Assertions.assertTrue(counter > 8, "Have to be more then ${8} current $counter")
+        Assertions.assertTrue(counter < 12, "Have to be less then ${12} current $counter")
     }
 }

@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.logging.Level
 import kotlin.reflect.KClass
 
-
 /**
  * Class that represents a new virtual any run timer task.
  *

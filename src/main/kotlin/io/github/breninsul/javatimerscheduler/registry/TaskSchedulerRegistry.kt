@@ -39,11 +39,11 @@ open class TaskSchedulerRegistry : MapTaskSchedulerRegistry<SchedulerType>() {
      * A TaskSchedulerRegistry specific to virtual threads no wait tasks.
      */
     protected open val virtualNoWaitThreadsTaskSchedulerRegistry = SingletonTimerVirtualThreadsTaskSchedulerRegistry(false)
+
     /**
      * A TaskSchedulerRegistry specific to virtual threads tasks. Wait for end of process before every run
      */
     protected open val virtualWaitThreadsTaskSchedulerRegistry = SingletonTimerVirtualThreadsTaskSchedulerRegistry(true)
-
 
     /**
      * A TaskSchedulerRegistry specific to timer per task tasks.

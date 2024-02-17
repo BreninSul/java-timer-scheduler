@@ -1,1 +1,1 @@
-rootProject.name = "java-timer-scheduler"
+rootProject.name = "java-timer-scheduler-starter"

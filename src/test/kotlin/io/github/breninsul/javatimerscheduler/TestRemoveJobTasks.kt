@@ -30,19 +30,17 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.random.Random
 
 class TestRemoveJobTasks {
     @Test
     fun testVirtualWaitJobIsPerformed() {
         testInternal(SchedulerType.VIRTUAL_WAIT, runDelay = Duration.ofSeconds(10))
     }
+
     @Test
     fun testVirtualNoWaitJobIsPerformed() {
         testInternal(SchedulerType.VIRTUAL_NO_WAIT, runDelay = Duration.ofSeconds(10))
     }
-
-
 
     @Test
     fun testCommonJobIsPerformedIfThrows() {
@@ -61,7 +59,7 @@ class TestRemoveJobTasks {
             }
         val id2 =
             TaskSchedulerRegistry.registerTypeTask(type, "test", jobDelay.multipliedBy(2)) {
-               runJob(counter)
+                runJob(counter)
             }
         Thread.sleep(runDelay)
         TaskSchedulerRegistry.remove(id1)

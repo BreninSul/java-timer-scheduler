@@ -22,15 +22,16 @@
  * SOFTWARE.
  */
 
-package io.github.breninsul.javatimerscheduler.registry
+package io.github.breninsul.javatimerscheduler.autoconfigure
+
+import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
-* Enum representing the different types of schedulers.
-* TIMER_PER_TASK: A timer scheduler that uses one timer per task.
-* SINGLETON_VIRTUAL_THREADS: A singleton scheduler that uses virtual threads.
-*/
-enum class SchedulerType {
-    THREAD_WAIT,
-    VIRTUAL_WAIT,
-    VIRTUAL_NO_WAIT,
-}
+ * Configurations for the dynamic scheduler.
+ *
+ * @property enabled Enables or disables dynamic scheduler. Default is true.
+ */
+@ConfigurationProperties("spring.scheduler.dynamic")
+data class SpringDynamicSchedulerProperties(
+    var enabled: Boolean = true,
+)
