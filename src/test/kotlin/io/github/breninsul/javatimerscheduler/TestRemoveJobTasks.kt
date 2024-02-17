@@ -34,39 +34,34 @@ import kotlin.random.Random
 
 class TestRemoveJobTasks {
     @Test
-    fun testVirtualJobIsPerformed() {
-        testInternal(SchedulerType.SINGLETON_VIRTUAL_THREADS)
+    fun testVirtualWaitJobIsPerformed() {
+        testInternal(SchedulerType.VIRTUAL_WAIT, runDelay = Duration.ofSeconds(10))
+    }
+    @Test
+    fun testVirtualNoWaitJobIsPerformed() {
+        testInternal(SchedulerType.VIRTUAL_NO_WAIT, runDelay = Duration.ofSeconds(10))
     }
 
-    @Test
-    fun testVirtualJobIsPerformedIfThrows() {
-        testInternal(SchedulerType.SINGLETON_VIRTUAL_THREADS, tryException = true)
-    }
 
-    @Test
-    fun testCommonJobIsPerformed() {
-        testInternal(SchedulerType.TIMER_PER_TASK, runDelay = Duration.ofSeconds(10))
-    }
 
     @Test
     fun testCommonJobIsPerformedIfThrows() {
-        testInternal(SchedulerType.TIMER_PER_TASK, tryException = true, runDelay = Duration.ofSeconds(10))
+        testInternal(SchedulerType.THREAD_WAIT, runDelay = Duration.ofSeconds(10))
     }
 
     private fun testInternal(
         type: SchedulerType,
         jobDelay: Duration = Duration.ofMillis(10),
         runDelay: Duration = Duration.ofSeconds(2),
-        tryException: Boolean = false,
     ) {
         val counter = AtomicLong(0)
         val id1 =
             TaskSchedulerRegistry.registerTypeTask(type, "test", jobDelay.multipliedBy(2)) {
-                if (tryException) runJobWithRandomExceptions(counter) else runJob(counter)
+                runJob(counter)
             }
         val id2 =
             TaskSchedulerRegistry.registerTypeTask(type, "test", jobDelay.multipliedBy(2)) {
-                if (tryException) runJobWithRandomExceptions(counter) else runJob(counter)
+               runJob(counter)
             }
         Thread.sleep(runDelay)
         TaskSchedulerRegistry.remove(id1)
@@ -76,13 +71,6 @@ class TestRemoveJobTasks {
         val counterValue2 = counter.get()
         Assertions.assertTrue(counterValue2 >= counterValue1, "Counter value have to be $counterValue2>=$counterValue1")
         Assertions.assertTrue(counterValue2 <= counterValue1 * 1.5, "Counter value have to be $counterValue2<=${counterValue1 * 1.5}")
-    }
-
-    private fun runJobWithRandomExceptions(counter: AtomicLong) {
-        runJob(counter)
-        if (Random.nextInt(10) == 5) {
-            throw RuntimeException("Test exception")
-        }
     }
 
     private fun runJob(counter: AtomicLong) {

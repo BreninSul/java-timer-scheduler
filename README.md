@@ -1,8 +1,7 @@
-This is small lib for easy run scheduled jobs in thread per job (SchedulerType.TIMER_PER_TASK) or virtual thread per job mode (SchedulerType.SINGLETON_VIRTUAL_THREADS)
-
-Configure with properties
-
-Beans in Spring Boot will be automatically registered in ConfigurableTransactionAutoConfiguration with defined properties ConfigurableTransactionTemplateProperties (prefix synchronisation).
+This is small lib for easy run scheduled jobs in thread per job 
+    - SchedulerType.THREAD_PER_TASK - Creates timer(and thread) for every task. Task will not be executed when previous is not completed
+    - SchedulerType.VIRTUAL_THREAD_PER_TASK_NO_WAIT - One common timer is created, virtual thread for any task. Task will be executed when previous is completed
+    - SchedulerType.VIRTUAL_THREAD_PER_TASK_WAIT - One common timer is created, virtual thread for any task. Task will not be executed when previous is completed
 
 add the following dependency:
 

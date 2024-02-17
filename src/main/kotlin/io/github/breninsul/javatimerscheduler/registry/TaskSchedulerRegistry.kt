@@ -36,9 +36,14 @@ import kotlin.reflect.KClass
  */
 open class TaskSchedulerRegistry : MapTaskSchedulerRegistry<SchedulerType>() {
     /**
-     * A TaskSchedulerRegistry specific to virtual threads tasks.
+     * A TaskSchedulerRegistry specific to virtual threads no wait tasks.
      */
-    protected open val virtualThreadsTaskSchedulerRegistry = SingletonTimerVirtualThreadsTaskSchedulerRegistry()
+    protected open val virtualNoWaitThreadsTaskSchedulerRegistry = SingletonTimerVirtualThreadsTaskSchedulerRegistry(false)
+    /**
+     * A TaskSchedulerRegistry specific to virtual threads tasks. Wait for end of process before every run
+     */
+    protected open val virtualWaitThreadsTaskSchedulerRegistry = SingletonTimerVirtualThreadsTaskSchedulerRegistry(true)
+
 
     /**
      * A TaskSchedulerRegistry specific to timer per task tasks.
@@ -48,7 +53,7 @@ open class TaskSchedulerRegistry : MapTaskSchedulerRegistry<SchedulerType>() {
     /**
      * The default task type that the TaskSchedulerRegistry will use if no type is supplied on task registration.
      */
-    protected open val defaultTaskType = SchedulerType.SINGLETON_VIRTUAL_THREADS
+    protected open val defaultTaskType = SchedulerType.VIRTUAL_NO_WAIT
 
     /**
      * Register a new task with a specific SchedulerType.
@@ -76,8 +81,9 @@ open class TaskSchedulerRegistry : MapTaskSchedulerRegistry<SchedulerType>() {
         return semaphore.sync {
             val id =
                 when (type) {
-                    SchedulerType.SINGLETON_VIRTUAL_THREADS -> virtualThreadsTaskSchedulerRegistry.registerTask(name, fixedRateDelay, firstDelay, loggerClass, loggingLevel, runnable)
-                    SchedulerType.TIMER_PER_TASK -> timerPerTaskTaskSchedulerRegistry.registerTask(name, fixedRateDelay, firstDelay, loggerClass, loggingLevel, runnable)
+                    SchedulerType.VIRTUAL_NO_WAIT -> virtualNoWaitThreadsTaskSchedulerRegistry.registerTask(name, fixedRateDelay, firstDelay, loggerClass, loggingLevel, runnable)
+                    SchedulerType.VIRTUAL_WAIT -> virtualWaitThreadsTaskSchedulerRegistry.registerTask(name, fixedRateDelay, firstDelay, loggerClass, loggingLevel, runnable)
+                    SchedulerType.THREAD_WAIT -> timerPerTaskTaskSchedulerRegistry.registerTask(name, fixedRateDelay, firstDelay, loggerClass, loggingLevel, runnable)
                 }
             tasksMap[id] = type
             return@sync id
@@ -104,8 +110,9 @@ open class TaskSchedulerRegistry : MapTaskSchedulerRegistry<SchedulerType>() {
     override fun clearInternal(id: Long): Boolean {
         val type = tasksMap.remove(id)
         return when (type) {
-            SchedulerType.SINGLETON_VIRTUAL_THREADS -> virtualThreadsTaskSchedulerRegistry.remove(id)
-            SchedulerType.TIMER_PER_TASK -> timerPerTaskTaskSchedulerRegistry.remove(id)
+            SchedulerType.VIRTUAL_NO_WAIT -> virtualNoWaitThreadsTaskSchedulerRegistry.remove(id)
+            SchedulerType.VIRTUAL_WAIT -> virtualWaitThreadsTaskSchedulerRegistry.remove(id)
+            SchedulerType.THREAD_WAIT -> timerPerTaskTaskSchedulerRegistry.remove(id)
             null -> false
         }
     }
@@ -115,7 +122,8 @@ open class TaskSchedulerRegistry : MapTaskSchedulerRegistry<SchedulerType>() {
 
     override fun clear() {
         semaphore.sync {
-            virtualThreadsTaskSchedulerRegistry.clear()
+            virtualNoWaitThreadsTaskSchedulerRegistry.clear()
+            virtualWaitThreadsTaskSchedulerRegistry.clear()
             timerPerTaskTaskSchedulerRegistry.clear()
             tasksMap.clear()
         }

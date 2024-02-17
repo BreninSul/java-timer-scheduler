@@ -22,16 +22,33 @@
  * SOFTWARE.
  */
 
-package io.github.breninsul.javatimerscheduler.registry
+package io.github.breninsul.javatimerscheduler.timer
+
+import io.github.breninsul.javatimerscheduler.sync
+import java.util.concurrent.atomic.AtomicLong
+import java.util.logging.Level
+import kotlin.reflect.KClass
+
 
 /**
-* Enum representing the different types of schedulers.
-* TIMER_PER_TASK: A timer scheduler that uses one timer per task.
-* SINGLETON_VIRTUAL_THREADS: A singleton scheduler that uses virtual threads.
-*/
-enum class SchedulerType {
-    THREAD_WAIT,
-    VIRTUAL_WAIT,
-    VIRTUAL_NO_WAIT,
-
+ * Class that represents a new virtual any run timer task.
+ *
+ * @param name The name of the task.
+ * @param counter An AtomicLong used for incrementing a count.
+ * @param loggerClass A class reference used for retrieving a logger.
+ * @param loggingLevel The level at which the logger should log.
+ * @param runnable The actual task to be run.
+ */
+open class VirtualNoWaitTimerTask(
+    name: String,
+    counter: AtomicLong = AtomicLong(0),
+    loggerClass: KClass<*> = VirtualNoWaitTimerTask::class,
+    loggingLevel: Level = Level.FINEST,
+    runnable: Runnable,
+) : VirtualTimerTask(name, counter, loggerClass, loggingLevel, runnable) {
+    override fun runInternal(currentThread: Thread) {
+        addThread(currentThread)
+        runnable.run()
+        removeThread(currentThread)
+    }
 }

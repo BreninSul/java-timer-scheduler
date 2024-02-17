@@ -35,38 +35,48 @@ import kotlin.random.Random
 class TestRunJobTasks {
     @Test
     fun testVirtualJobIsPerformed() {
-        testInternal(SchedulerType.SINGLETON_VIRTUAL_THREADS)
+        testInternal(SchedulerType.VIRTUAL_NO_WAIT)
     }
 
     @Test
     fun testVirtualJobIsPerformedIfThrows() {
-        testInternal(SchedulerType.SINGLETON_VIRTUAL_THREADS, tryException = true)
+        testInternal(SchedulerType.VIRTUAL_NO_WAIT, tryException = true)
+    }
+    @Test
+    fun testVirtuaWaitlJobIsPerformed() {
+        testInternal(SchedulerType.VIRTUAL_WAIT, moreEqThen = 14, lessEqThen = 22)
+    }
+
+    @Test
+    fun testVirtuaWaitlJobIsPerformedIfThrows() {
+        testInternal(SchedulerType.VIRTUAL_WAIT, moreEqThen = 14, lessEqThen = 22, tryException = true)
     }
 
     @Test
     fun testCommonJobIsPerformed() {
-        testInternal(SchedulerType.TIMER_PER_TASK, moreEqThen = 14, lessEqThen = 22)
+        testInternal(SchedulerType.THREAD_WAIT, moreEqThen = 14, lessEqThen = 22)
     }
 
     @Test
     fun testCommonJobIsPerformedIfThrows() {
-        testInternal(SchedulerType.TIMER_PER_TASK, moreEqThen = 14, lessEqThen = 22, tryException = true)
+        testInternal(SchedulerType.THREAD_WAIT, moreEqThen = 14, lessEqThen = 22, tryException = true)
     }
 
     private fun testInternal(
         type: SchedulerType,
         jobDelay: Duration = Duration.ofMillis(10),
         runDelay: Duration = Duration.ofSeconds(10),
+        sleep:Duration = Duration.ofSeconds(1),
         moreEqThen: Int = 700,
         lessEqThen: Int = 1100,
         tryException: Boolean = false,
     ) {
         val counter = AtomicLong(0)
         TaskSchedulerRegistry.registerTypeTask(type, "test", jobDelay.multipliedBy(2)) {
-            if (tryException)runJobWithRandomExceptions(counter) else runJob(counter)
+            if (tryException)runJobWithRandomExceptions(sleep,counter) else runJob(sleep,counter)
         }
         TaskSchedulerRegistry.registerTypeTask(type, "test", jobDelay.multipliedBy(2)) {
-            if (tryException)runJobWithRandomExceptions(counter) else runJob(counter)
+            if (tryException)runJobWithRandomExceptions(sleep,counter) else runJob(sleep,counter)
         }
         Thread.sleep(runDelay)
         val counterValue = counter.get()
@@ -75,15 +85,15 @@ class TestRunJobTasks {
         println(counterValue)
     }
 
-    private fun runJobWithRandomExceptions(counter: AtomicLong) {
-        runJob(counter)
+    private fun runJobWithRandomExceptions(sleep:Duration,counter: AtomicLong) {
+        runJob(sleep,counter)
         if (Random.nextInt(10) == 5) {
             throw RuntimeException("Test exception")
         }
     }
 
-    private fun runJob(counter: AtomicLong) {
-        Thread.sleep(Duration.ofSeconds(1))
+    private fun runJob(sleep:Duration,counter: AtomicLong) {
+        Thread.sleep(sleep)
         counter.incrementAndGet()
     }
 }

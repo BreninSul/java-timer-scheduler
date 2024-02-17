@@ -25,26 +25,25 @@
 package io.github.breninsul.javatimerscheduler.timer
 
 import io.github.breninsul.javatimerscheduler.sync
-import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicLong
 import java.util.logging.Level
 import kotlin.reflect.KClass
 
+
 /**
- * A class that represents a virtual runnable timer task.
- * This class manages and schedules a set of threads for execution.
+ * Represents a virtual timer task.
  *
- * @property name The name of the virtual runnable timer task.
- * @property counter An atomic counter used across tasks.
- * @property loggerClass The class used for logging.
- * @property loggingLevel The level at which to log messages.
- * @property runnable The runnable task scheduled for execution.
+ * @property name The name of the task.
+ * @property counter An AtomicLong used for incrementing a count.
+ * @property loggerClass A class reference used for retrieving a logger.
+ * @property loggingLevel The level at which the logger should log.
+ * @property runnable The actual task to be run.
  */
-open class VirtualRunnableTimerTask(
+abstract class VirtualTimerTask(
     name: String,
     counter: AtomicLong = AtomicLong(0),
-    loggerClass: KClass<*> = VirtualRunnableTimerTask::class,
+    loggerClass: KClass<*> = VirtualTimerTask::class,
     loggingLevel: Level = Level.FINEST,
     runnable: Runnable,
 ) : RunnableTimerTask(name, counter, loggerClass, loggingLevel, runnable) {
@@ -64,14 +63,14 @@ open class VirtualRunnableTimerTask(
      * @return a boolean indicating if cancellation was successful.
      */
     override fun cancel(): Boolean {
-        semaphore.sync {
-            threadsList.forEach {
-                try {
-                    it.interrupt()
-                } catch (t: Throwable) {
-                    logger.log(Level.FINEST, "Error during virtual thread cancellation", t)
-                }
+        try {
+            var thread = removeAny()
+            while (thread != null) {
+                thread.interrupt()
+                thread = removeAny()
             }
+        } catch (t: Throwable) {
+            logger.log(Level.FINEST, "Error during virtual thread cancellation", t)
         }
         return super.cancel()
     }
@@ -82,13 +81,27 @@ open class VirtualRunnableTimerTask(
     override fun run() {
         Thread.ofVirtual().name(name).start {
             val currentThread = Thread.currentThread()
-            semaphore.sync {
-                threadsList.add(currentThread)
-            }
-            super.run()
-            semaphore.sync {
-                threadsList.remove(currentThread)
-            }
+            runInternal(currentThread)
+        }
+    }
+
+    abstract fun runInternal(currentThread: Thread)
+
+    protected fun addThread(thread: Thread) {
+        semaphore.sync {
+            threadsList.add(thread)
+        }
+    }
+
+    protected fun removeThread(thread: Thread) {
+        semaphore.sync {
+            threadsList.remove(thread)
+        }
+    }
+
+    protected fun removeAny(): Thread? {
+        return semaphore.sync {
+            return@sync threadsList.removeFirstOrNull()
         }
     }
 }
