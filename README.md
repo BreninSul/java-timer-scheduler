@@ -8,7 +8,7 @@ add the following dependency:
 ````kotlin
 dependencies {
 //Other dependencies
-    implementation("io.github.breninsul:configurable-transaction-template-starter:${version}")
+    implementation("io.github.breninsul:java-timer-scheduler:${version}")
 //Other dependencies
 }
 

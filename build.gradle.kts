@@ -12,7 +12,7 @@ val kotlinVersion = "1.9.22"
 val javaVersion = JavaVersion.VERSION_21
 
 group = "io.github.breninsul"
-version = "1.0.0"
+version = "1.0.2"
 
 java {
     sourceCompatibility = javaVersion
@@ -33,8 +33,6 @@ tasks.compileKotlin {
 }
 
 dependencies {
-//    implementation("org.springframework.boot:spring-boot-starter:$springBootVersion")
-    implementation("com.cronutils:cron-utils:9.2.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.2")
 }
